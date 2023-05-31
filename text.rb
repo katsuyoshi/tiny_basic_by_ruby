@@ -3,7 +3,7 @@ module TinyBasic
 class TextLine
   attr_accessor :no, :statements
   def initialize line
-    if /^(\d*)\s*(.*)\s*\n/ =~ line
+    if /^(\d*)\s*(.*)\s*/ =~ line
       p [$1, $2]  # DEBUGME
       @no = $1&.to_i
       @statements = $2
@@ -14,6 +14,10 @@ class TextLine
 
   def direct?
     no&.== 0
+  end
+
+  def has_statements?
+    @statements&.!= nil
   end
 
   def command
@@ -44,10 +48,14 @@ class Text
       self << TextLine.new(line)
     when TextLine
       @current = line
+p @current  # DEBUGME
       unless @current.direct?
-        if @statements.nil?
-          lines.delete(line.no)
+p __LINE__, @current
+        if @current.has_statements?
+          p __LINE__
+          lines.delete(@current.no)
         else 
+          p __LINE__
           lines[line.no] = @current unless @current.direct?
         end
       p lines  # DEBUGME
