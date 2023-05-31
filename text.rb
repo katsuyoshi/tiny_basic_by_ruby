@@ -1,3 +1,5 @@
+require 'error'
+
 module TinyBasic
 
 class TextLine
@@ -8,7 +10,7 @@ class TextLine
       @no = $1&.to_i
       @statements = $2
     else
-      raise "what"
+      raise WhatError.new
     end
   end
 
@@ -17,7 +19,7 @@ class TextLine
   end
 
   def has_statements?
-    @statements&.!= nil
+    @statements&.length != 0
   end
 
   def command
@@ -53,15 +55,15 @@ p @current  # DEBUGME
 p __LINE__, @current
         if @current.has_statements?
           p __LINE__
-          lines.delete(@current.no)
+          lines[line.no] = @current unless @current.direct?
         else 
           p __LINE__
-          lines[line.no] = @current unless @current.direct?
+          lines.delete(@current.no)
         end
       p lines  # DEBUGME
       end
     else
-      raise "What?"
+      raise WhatError.new
     end
   end
 
