@@ -1,45 +1,11 @@
+require 'text_line'
 require 'error'
 
 module TinyBasic
 
-class TextLine
-  attr_accessor :no, :statements
-  def initialize line
-    if /^(\d*)\s*(.*)\s*/ =~ line
-      p [$1, $2]  # DEBUGME
-      @no = $1&.to_i
-      @statements = $2
-    else
-      raise WhatError.new
-    end
-  end
-
-  def direct?
-    no&.== 0
-  end
-
-  def has_statements?
-    @statements&.length != 0
-  end
-
-  def command
-    p statements  # DEBUGME
-    case statements
-    when /^list/i
-      :list
-    when /^run/i
-      :run
-    when /^new/i
-      :new
-    else
-      nil
-    end
-  end
-
-end
-
 class Text
   attr_reader :lines, :current
+
   def initialize
     @lines = {}
   end
@@ -50,29 +16,26 @@ class Text
       self << TextLine.new(line)
     when TextLine
       @current = line
-p @current  # DEBUGME
       unless @current.direct?
-p __LINE__, @current
         if @current.has_statements?
-          p __LINE__
           lines[line.no] = @current unless @current.direct?
         else 
-          p __LINE__
           lines.delete(@current.no)
         end
-      p lines  # DEBUGME
       end
+      @current
     else
       raise WhatError.new
     end
   end
 
-  def direct?
-    current&.direct?
-  end
+  def exec_line line = current
+    return if line.nil?
 
-  def exec_line
-    case current&.command
+    str = line.statements
+    ptr = 0
+
+    case line&.command
     when :list
       print_list
     when :run
@@ -83,7 +46,6 @@ p __LINE__, @current
   end
 
   def print_list
-    p lines  # DEBUGME
     lines.keys.sort.each do |no|
       l = lines[no]
       puts "#{l.no} #{l.statements}"

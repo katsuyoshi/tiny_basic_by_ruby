@@ -1,22 +1,19 @@
 $LOAD_PATH.unshift(File.dirname(File.expand_path(__FILE__)))
 
-require 'text'
+require 'program'
 require 'version'
 
 include TinyBasic
 
-@text = Text.new
+@prog = Program.new
 
 puts "Tiny Basic by Ruby #{VERSION}."
+puts
+puts "OK"
 
 loop do
   print "> "
   buf = gets
-  @text << buf
-  
-  if @text.direct?
-    @text.exec_line
-  end
-
+  @prog << buf
   break if /exit|quit/ =~ buf
 end
