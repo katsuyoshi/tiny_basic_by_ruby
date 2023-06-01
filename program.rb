@@ -47,7 +47,7 @@ class Program
       len = cmd_str.length
       0.upto len do |i|
         if str[i] == "."
-          return [cmd, str((i + 1)..-1)]
+          return [cmd, str[(i + 1)..-1]]
         end
         if cmd_str[i] == str[i]
           return [cmd, str[(i + 1)..-1]] if i == len - 1

@@ -32,23 +32,5 @@ class MyTest < Test::Unit::TestCase
     assert_equal(true, l.has_statements?)
   end
 
-  # test command
-  def test_command_list
-    assert_equal(:list, TextLine.new("list").command)
-    assert_equal(:list, TextLine.new("LIST").command)
-    assert_equal(:list, TextLine.new("List").command)
-    assert_equal(:list, TextLine.new("L.").command)
-    assert_equal(:list, TextLine.new("LI.").command)
-    assert_equal(:list, TextLine.new("LIS.").command)
-  end
-
-  # test command
-  def test_command_list_short
-    assert_equal(:list, TextLine.new(".").command)
-    assert_equal(:list, TextLine.new("l.").command)
-    assert_equal(:list, TextLine.new("li.").command)
-    assert_equal(:list, TextLine.new("lis.").command)
-  end
-
 
 end

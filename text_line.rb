@@ -5,7 +5,7 @@ class TextLine
 
   def initialize line
     if /^(\d*)\s*(.*)\s*/ =~ line
-      @no = $1&.to_i
+      @no = ($1 || 0)&.to_i
       @statements = $2.upcase
     else
       raise WhatError.new
@@ -13,27 +13,11 @@ class TextLine
   end
 
   def direct?
-    no&.== 0
+    no == 0
   end
 
   def has_statements?
     @statements&.length != 0
-  end
-
-  def command
-    Commands.each do |cmd|
-    end
-
-    case statements
-    when /^LIST/
-      :list
-    when /^RUN/
-      :run
-    when /^NEW/
-      :new
-    else
-      nil
-    end
   end
 
 end

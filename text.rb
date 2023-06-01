@@ -29,22 +29,6 @@ class Text
     end
   end
 
-  def exec_line line = current
-    return if line.nil?
-
-    str = line.statements
-    ptr = 0
-
-    case line&.command
-    when :list
-      print_list
-    when :run
-      # TODO:
-    when :new
-      @lines = {}
-    end
-  end
-
   def print_list
     lines.keys.sort.each do |no|
       l = lines[no]
