@@ -8,12 +8,17 @@ include TinyBasic
 @prog = Program.new
 
 puts "Tiny Basic by Ruby #{VERSION}."
-puts
-puts "OK"
 
 loop do
-  print "> "
-  buf = gets
-  @prog << buf
-  break if /exit|quit/ =~ buf
+  puts
+  puts "OK"
+
+  loop do
+    print "> "
+    buf = gets
+    exit if /exit|quit/ =~ buf
+
+    r = @prog << buf
+    break if r
+  end
 end

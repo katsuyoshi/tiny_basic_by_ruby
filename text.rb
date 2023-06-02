@@ -29,20 +29,34 @@ class Text
     end
   end
 
-  def print_list
-    lines.keys.sort.each do |no|
-      l = lines[no]
+  def empty?
+    @lines.empty?
+  end
+
+  def clear
+    @lines = {}
+  end
+
+  def print_list no
+    lines.keys.sort.each do |n|
+      next if n < no
+      l = lines[n]
       puts "#{l.no} #{l.statements}"
     end
   end
 
-  def empty?
-    @lines.empty?
+  def find_line no
+    @lines[no]
   end
-  
-  def clear
-    @lines = {}
+
+  def find_next_line no
+    @lines.keys.each do |n|
+      return @lines[n] if n > no
+    end
+    nil
   end
+
+  private
 
 
 end
