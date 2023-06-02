@@ -8,7 +8,7 @@ class Program
   Commands = {
     list: :print_list,
     run: :not_implemented,
-    new: :not_implemented,
+    new: :clear,
     next: :not_implemented,
     let: :not_implemented,
     if: :not_implemented,
@@ -67,6 +67,11 @@ class Program
   def print_list
     text.print_list
   end
+
+  def clear
+    text.clear
+  end
+
 
 end
 

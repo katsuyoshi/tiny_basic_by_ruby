@@ -7,7 +7,7 @@ class Text
   attr_reader :lines, :current
 
   def initialize
-    @lines = {}
+    clear
   end
 
   def << line
@@ -35,6 +35,15 @@ class Text
       puts "#{l.no} #{l.statements}"
     end
   end
+
+  def empty?
+    @lines.empty?
+  end
+  
+  def clear
+    @lines = {}
+  end
+
 
 end
 

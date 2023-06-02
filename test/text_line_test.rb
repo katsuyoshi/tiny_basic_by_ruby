@@ -1,7 +1,7 @@
 $LOAD_PATH.unshift(File.dirname(File.expand_path(__FILE__)))
 require 'test_helper'
 
-class MyTest < Test::Unit::TestCase
+class TextLineTest < Test::Unit::TestCase
   def setup
   end
 
