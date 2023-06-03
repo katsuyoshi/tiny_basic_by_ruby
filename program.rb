@@ -20,7 +20,7 @@ class Program
     input: :not_implemented,
     print: :not_implemented,
     stop: :stop,
-}
+  }
 
 
   def initialize
@@ -31,23 +31,24 @@ class Program
   def << line
     @current = text << line
     if @current.direct?
-      exec @current.statements
+      exec_line @current
       true
     else
       false
     end
   end
 
-  def exec str
-    cmd, str = command str
+  def exec_line line
+    line.reset
+    cmd = line.command
     case cmd
     when :run, :new, :stop
       # Check there is nothing after the command.
-      raise WhatError unless str.empty?
+      raise WhatError unless line.end_line?
       send Commands[cmd]
     when :list
-      n, str = number str
-      p [n, str]
+      n = line.number
+      raise WhatError unless line.end_line?
       send Commands[cmd], n || 0
     end
 
@@ -55,48 +56,11 @@ class Program
 
   private
 
-  def command str
-    Commands.keys.each do |cmd|
-      cmd_str = cmd.to_s.upcase
-      len = cmd_str.length
-      0.upto len do |i|
-        if str[i] == "."
-          return [cmd, str[(i + 1)..-1]]
-        end
-        if cmd_str[i] == str[i]
-          return [cmd, str[(i + 1)..-1]] if i == len - 1
-        else
-          break
-        end
-      end
-    end
-    return [nil, str]
-  end
-
-  def number str
-    numstr = ""
-    idx = 0
-    str.each_char.with_index do |c, i|
-      idx = i
-      if ('0'..'9').include? c
-        numstr << c 
-      else
-        break unless numstr.empty? && c == " "
-      end
-    end
-    if numstr.empty?
-      [nil, str]
-    else
-      n = numstr.to_i
-      raise HowError unless n <= 32768
-p [str, n, str[idx..-1], idx]
-      [n, str[(idx + 1)..-1]]
-    end
-  end
   
+  # execuet command
+
   def not_implemented
   end
-
 
   def print_list no
     text.print_list no

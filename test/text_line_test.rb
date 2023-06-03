@@ -32,5 +32,18 @@ class TextLineTest < Test::Unit::TestCase
     assert_equal(true, l.has_statements?)
   end
 
+  def test_line_list
+    l = TextLine.new("list")
+    assert_equal(:list, l.command)
+    assert_equal(true, l.end_line?)
+  end
+
+  def test_line_n_list
+    l = TextLine.new("list 20")
+    assert_equal(:list, l.command)
+    assert_equal(20, l.number)
+    assert_equal(true, l.end_line?)
+  end
+
 
 end
