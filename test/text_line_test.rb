@@ -45,5 +45,38 @@ class TextLineTest < Test::Unit::TestCase
     assert_equal(true, l.end_line?)
   end
 
+  def test_separator_q
+    l = TextLine.new("print 'abc';")
+    l.command
+    assert_equal false, l.separator?
+
+    l = TextLine.new("print;")
+    l.command
+    assert_equal true, l.separator?
+  end
+
+  def test_sharp_q
+    l = TextLine.new("print 'abc';")
+    l.command
+    assert_equal false, l.sharp?
+
+    l = TextLine.new("print #3;")
+    l.command
+    assert_equal true, l.sharp?
+  end
+
+  def test_string
+    l = TextLine.new("print 'abc';")
+    l.command
+    assert_equal 'ABC', l.string
+
+    l = TextLine.new("print \"def\";")
+    l.command
+    assert_equal "DEF", l.string
+
+    l = TextLine.new("print ;")
+    l.command
+    assert_equal nil, l.string
+  end
 
 end

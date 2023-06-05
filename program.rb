@@ -18,7 +18,7 @@ class Program
     rem: :not_implemented,
     for: :not_implemented,
     input: :not_implemented,
-    print: :not_implemented,
+    print: :print,
     stop: :stop,
   }
 
@@ -50,6 +50,8 @@ class Program
       n = line.number
       raise WhatError unless line.end_line?
       send Commands[cmd], n || 0
+    when :print
+      send Commands[cmd], line
     end
 
   end
@@ -71,6 +73,20 @@ class Program
   end
 
   def stop
+  end
+
+  def print line
+    digits = 6
+    loop do
+      if line.separetor? || line.end_line?
+        puts
+        return
+      elsif line.sharp?
+        digits = line.number
+      elsif str = line.string
+        print str
+      end
+    end
   end
 
 end

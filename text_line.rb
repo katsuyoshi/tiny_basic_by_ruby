@@ -88,12 +88,45 @@ class TextLine
     end
   end
 
+  def string
+    i = 0
+    quote = nil
+    loop do
+      ch = statements[pointer + i]
+      case ch
+      when '"', "'"
+        quote = ch
+        move_pointer(1)
+        break
+      when ' '
+        move_pointer(1)
+      else
+        return nil
+      end
+    end
+
+    str = ""
+    loop do
+      ch = statements[pointer + i]
+      case ch
+      when quote, nil
+        move_pointer(1)
+        return str
+      else
+        str += ch
+        move_pointer(1)
+      end
+    end
+  end
+
   def end_line?
     i = 0
-    while ch = statements[pointer + i]
-      case ch
+    loop do
+      case statements[pointer + i]
       when ' '
         i += 1
+      when nil
+        break
       else
         move_pointer(i)
         return false
@@ -101,6 +134,34 @@ class TextLine
     end
     move_pointer(i)
     true
+  end
+
+  def separator?
+    loop do
+      case statements[pointer]
+      when ' '
+        move_pointer(1)
+      when ';'
+        move_pointer(1)
+        return true
+      else
+        return false
+      end
+    end
+  end
+
+  def sharp?
+    loop do
+      case statements[pointer]
+      when ' '
+        move_pointer(1)
+      when '#'
+        move_pointer(1)
+        return true
+      else
+        return false
+      end
+    end
   end
   
 
