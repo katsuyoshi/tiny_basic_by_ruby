@@ -21,6 +21,12 @@ class TextLine
     :stop,
   ]
 
+  Functions = [
+    :rnd,
+    :abs,
+    :size
+  ]
+
   def initialize line
     if /^(\d*)\s*(.*)\s*/ =~ line
       @no = ($1 || 0)&.to_i
@@ -39,7 +45,18 @@ class TextLine
     @statements&.length != 0
   end
 
-  def command
+  def skip_space
+    loop do
+      if statements[pointer] == ' '
+        move_pointer(1)
+      else
+        break
+      end
+    end
+  end
+
+  def command?
+    skip_space
     Commands.each do |cmd|
       cmd_str = cmd.to_s.upcase
       len = cmd_str.length
@@ -62,7 +79,8 @@ class TextLine
     return nil
   end
 
-  def number
+  def number?
+    skip_space
     str = ""
     i = 0
     while ch = statements[pointer + i]
@@ -88,7 +106,8 @@ class TextLine
     end
   end
 
-  def string
+  def string?
+    skip_space
     i = 0
     quote = nil
     loop do
@@ -117,6 +136,27 @@ class TextLine
         move_pointer(1)
       end
     end
+  end
+
+  def function?
+    skip_space
+    Functions.each do |func|
+      func_str = func.to_s.upcase
+      len = func_str.length
+      0.upto len do |i|
+        ch = statements[pointer + i]
+        next if ch == ' '
+        if func_str[i] == ch
+          if i == len - 1
+            move_pointer(i + 1)
+            return func
+          end
+        else
+          break
+        end
+      end
+    end
+    return nil
   end
 
   def end_line?
@@ -161,6 +201,36 @@ class TextLine
       else
         return false
       end
+    end
+  end
+
+  def variable?
+    skip_space
+    var = statements[pointer]
+    if ('A'..'Z').include?(var) || var == '@'
+      move_pointer(1)
+      return var
+    end
+    nil
+  end
+
+  def left_parenthesis?
+    skip_space
+    if statements[pointer] == '('
+      move_pointer(1)
+      true
+    else
+      false
+    end
+  end
+  
+  def right_parenthesis?
+    skip_space
+    if statements[pointer] == ')'
+      move_pointer(1)
+      true
+    else
+      false
     end
   end
   

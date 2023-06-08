@@ -1,9 +1,13 @@
 require 'text'
+require 'error'
 
 module TinyBasic
 
 class Program
   attr_reader :text, :current
+
+  attr_reader :variables, :array
+  attr_reader :variable_stack
 
   Commands = {
     list: :print_list,
@@ -25,6 +29,9 @@ class Program
 
   def initialize
     @text = Text.new
+    @variables = {}
+    @array = []
+    @variable_stack = []
   end
 
   # @return true: executed direct command; false: append a line to the text area
@@ -40,15 +47,15 @@ class Program
 
   def exec_line line
     line.reset
-    cmd = line.command
+    cmd = line.command?
     case cmd
     when :run, :new, :stop
       # Check there is nothing after the command.
-      raise WhatError unless line.end_line?
+      raise WhatError.new unless line.end_line?
       send Commands[cmd]
     when :list
-      n = line.number
-      raise WhatError unless line.end_line?
+      n = line.number?
+      raise WhatError.new unless line.end_line?
       send Commands[cmd], n || 0
     when :print
       send Commands[cmd], line
@@ -76,15 +83,100 @@ class Program
   end
 
   def print line
+  p line
     digits = 6
     loop do
-      if line.separetor? || line.end_line?
+      if line.separator? || line.end_line?
         puts
         return
       elsif line.sharp?
-        digits = line.number
-      elsif str = line.string
+        digits = line.number?
+      elsif str = line.string?
         print str
+      else
+        v = expression line
+        print v.to_s.rjust(digits, ' ')
+      end
+    end
+  end
+
+  def expression line
+    v = expression_2 line
+    return v if v
+    v = expression_3 line
+    return v if v
+    expression_4 line
+  end
+
+  def expression_2 line
+    nil
+  end
+
+  def expression_3 line
+    nil
+  end
+
+  def parenthesis line
+    unless line.left_parenthesis?
+      raise WhatError.new
+    end
+    v = expression(line)
+    unless line.right_parenthesis?
+      raise WhatError.new
+    end
+    v
+  end
+
+  def expression_4 line
+    case line.function?
+    when :abs
+      v = parenthesis line
+      v.abs
+
+    when :rnd
+      v = parenthesis line
+      unless 1 <= v && v <= 32767 - 1
+        raise HowError.new
+      end
+      rand(v) + 1
+
+    when :size
+      # DUMMY SIZE
+      1024 * 1024
+
+    else
+      var = line.variable?
+      case var
+      when nil
+        n = line.number?
+        return n if n
+        if line.left_parenthesis?
+          v = expression
+          unless line.right_parenthesis?
+            raise WhatError.new
+          end
+          return v
+        else
+          raise WhatError.new
+        end
+
+      when '@'
+        unless line.left_parenthesis?
+          raise WhatError.new
+        end
+        n = parenthesis line
+        unless n
+          raise WhatError.new
+        end
+        unless 0 <= n && n <= 32767
+          raise HowError.new
+        end
+        unless line.right_parenthesis?
+          raise WhatError
+        end
+        variable_stack << line
+      else
+        variable_stack << var
       end
     end
   end
