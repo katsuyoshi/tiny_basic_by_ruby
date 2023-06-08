@@ -149,21 +149,13 @@ class Program
       case var
       when nil
         n = line.number?
-        return n if n
-        if line.left_parenthesis?
-          v = expression
-          unless line.right_parenthesis?
-            raise WhatError.new
-          end
-          return v
+        if n
+          n
         else
-          raise WhatError.new
+          parenthesis line
         end
 
       when '@'
-        unless line.left_parenthesis?
-          raise WhatError.new
-        end
         n = parenthesis line
         unless n
           raise WhatError.new
@@ -171,10 +163,7 @@ class Program
         unless 0 <= n && n <= 32767
           raise HowError.new
         end
-        unless line.right_parenthesis?
-          raise WhatError
-        end
-        variable_stack << line
+        variable_stack << n
       else
         variable_stack << var
       end
