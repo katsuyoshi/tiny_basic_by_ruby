@@ -27,6 +27,15 @@ class TextLine
     :size
   ]
 
+  Operators = [
+    :">=",
+    :"#",
+    :">",
+    :"=",
+    :"<=",
+    :"<",
+  ]
+
   def initialize line
     if /^(\d*)\s*(.*)\s*/ =~ line
       @no = ($1 || 0)&.to_i
@@ -159,6 +168,27 @@ class TextLine
     return nil
   end
 
+  def operator?
+    skip_space
+    Operators.each do |oper|
+      oper_str = oper.to_s.upcase
+      len = oper_str.length
+      0.upto len do |i|
+        ch = statements[pointer + i]
+        next if ch == ' '
+        if oper_str[i] == ch
+          if i == len - 1
+            move_pointer(i + 1)
+            return oper
+          end
+        else
+          break
+        end
+      end
+    end
+    return nil
+  end
+
   def end_line?
     i = 0
     loop do
@@ -227,6 +257,46 @@ class TextLine
   def right_parenthesis?
     skip_space
     if statements[pointer] == ')'
+      move_pointer(1)
+      true
+    else
+      false
+    end
+  end
+
+  def adding?
+    skip_space
+    if statements[pointer] == '+'
+      move_pointer(1)
+      true
+    else
+      false
+    end
+  end
+  
+  def subtracting?
+    skip_space
+    if statements[pointer] == '-'
+      move_pointer(1)
+      true
+    else
+      false
+    end
+  end
+  
+  def multiplying?
+    skip_space
+    if statements[pointer] == '*'
+      move_pointer(1)
+      true
+    else
+      false
+    end
+  end
+  
+  def dividing?
+    skip_space
+    if statements[pointer] == '/'
       move_pointer(1)
       true
     else

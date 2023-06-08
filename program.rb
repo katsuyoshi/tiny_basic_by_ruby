@@ -7,7 +7,6 @@ class Program
   attr_reader :text, :current
 
   attr_reader :variables, :array
-  attr_reader :variable_stack
 
   Commands = {
     list: :print_list,
@@ -31,7 +30,6 @@ class Program
     @text = Text.new
     @variables = {}
     @array = []
-    @variable_stack = []
   end
 
   # @return true: executed direct command; false: append a line to the text area
@@ -83,7 +81,6 @@ class Program
   end
 
   def print line
-  p line
     digits = 6
     loop do
       if line.separator? || line.end_line?
@@ -101,19 +98,79 @@ class Program
   end
 
   def expression line
-    v = expression_2 line
-    return v if v
-    v = expression_3 line
-    return v if v
-    expression_4 line
+    expression_1(line)
+  end
+
+  def expression_1 line
+    v1 = expression_2(line)
+    op = line.operator?
+    unless op
+      return v1
+    end
+
+    v2 = expression_2(line)
+    case op
+    when :">="
+      v1 >= v2 ? 1 : 0
+    when :"#"
+      v1 != v2 ? 1 : 0
+    when :">"
+      v1 > v2 ? 1 : 0
+    when :"="
+      v1 = v2 ? 1 : 0
+    when :"<="
+      v1 <= v2 ? 1 : 0
+    when :"<"
+      v1 < v2 ? 1 : 0
+    end
   end
 
   def expression_2 line
-    nil
+    v1 = expression_3(line)
+    loop do
+      if line.adding?
+        v2 = expression_3(line)
+        puts "#{v1} + #{v2}"
+        v = v1 + v2
+        unless -32768 <= v && v <= 32767
+          raise HowError.new
+        end
+        v1 = v
+      elsif line.subtracting?
+        v2 = expression_3(line)
+        puts "#{v1} - #{v2}"
+        v = v1 - v2
+        unless -32768 <= v && v <= 32767
+          raise HowError.new
+        end
+        v1 = v
+      else
+        break
+      end
+    end
+    v1
   end
 
   def expression_3 line
-    nil
+    v1 = expression_4(line)
+    loop do
+      if line.multiplying?
+        v2 = expression_4(line)
+        puts "#{v1} * #{v2}"
+        v = v1 * v2
+        unless -32768 <= v && v <= 32767
+          raise HowError.new
+        end
+        v1 = v
+      elsif line.dividing?
+        v2 = expression_4(line)
+        puts "#{v1} / #{v2}"
+        v1 = v1 / v2
+      else
+        break
+      end
+    end
+    v1
   end
 
   def parenthesis line
@@ -127,7 +184,7 @@ class Program
     v
   end
 
-  def expression_4 line
+  def expression_4(line)
     case line.function?
     when :abs
       v = parenthesis line
@@ -156,6 +213,7 @@ class Program
         end
 
       when '@'
+        # array a[0-32767]
         n = parenthesis line
         unless n
           raise WhatError.new
@@ -163,9 +221,10 @@ class Program
         unless 0 <= n && n <= 32767
           raise HowError.new
         end
-        variable_stack << n
+        array[n] || 0
       else
-        variable_stack << var
+        # variable 'A'-'Z'
+        variables[var] || 0
       end
     end
   end
