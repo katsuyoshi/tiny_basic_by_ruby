@@ -98,4 +98,23 @@ class TextLineTest < Test::Unit::TestCase
 
   end
 
+  def test_ommited_function
+    l = TextLine.new("print a.;")
+    l.command?
+    assert_equal :abs, l.function?
+
+    l = TextLine.new("print r.;")
+    l.command?
+    assert_equal :rnd, l.function?
+
+    l = TextLine.new("print s.;")
+    l.command?
+    assert_equal :size, l.function?
+
+    l = TextLine.new("print .;")
+    l.command?
+    assert_equal :rnd, l.function?
+
+  end
+
 end

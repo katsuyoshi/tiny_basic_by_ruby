@@ -158,6 +158,10 @@ class TextLine
       len = func_str.length
       0.upto len do |i|
         ch = statements[pointer + i]
+        if ch == "."
+          move_pointer(i + 1)
+          return func
+        end
         next if ch == ' '
         if func_str[i] == ch
           if i == len - 1
