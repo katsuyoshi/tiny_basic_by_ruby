@@ -37,7 +37,7 @@ class Text
     @lines = {}
   end
 
-  def print_list no
+  def exec_print_list no
     lines.keys.sort.each do |n|
       next if n < no
       l = lines[n]

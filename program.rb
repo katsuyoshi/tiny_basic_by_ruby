@@ -9,7 +9,7 @@ class Program
   attr_reader :variables, :array
 
   Commands = {
-    list: :print_list,
+    list: :exec_print_list,
     run: :not_implemented,
     new: :clear,
     next: :not_implemented,
@@ -21,7 +21,7 @@ class Program
     rem: :not_implemented,
     for: :not_implemented,
     input: :not_implemented,
-    print: :print,
+    print: :exec_print,
     stop: :stop,
   }
 
@@ -45,20 +45,21 @@ class Program
 
   def exec_line line
     line.reset
-    cmd = line.command?
-    case cmd
-    when :run, :new, :stop
-      # Check there is nothing after the command.
-      raise WhatError.new unless line.end_line?
-      send Commands[cmd]
-    when :list
-      n = line.number?
-      raise WhatError.new unless line.end_line?
-      send Commands[cmd], n || 0
-    when :print
-      send Commands[cmd], line
+    until line.end_line?
+      cmd = line.command?
+      case cmd
+      when :run, :new, :stop
+        # Check there is nothing after the command.
+        raise WhatError.new unless line.end_line?
+        send Commands[cmd]
+      when :list
+        n = line.number?
+        raise WhatError.new unless line.end_line?
+        send Commands[cmd], n || 0
+      when :print
+        send Commands[cmd], line
+      end
     end
-
   end
 
   private
@@ -69,8 +70,8 @@ class Program
   def not_implemented
   end
 
-  def print_list no
-    text.print_list no
+  def exec_print_list no
+    text.exec_print_list no
   end
 
   def clear
@@ -80,18 +81,19 @@ class Program
   def stop
   end
 
-  def print line
+  def exec_print line
     digits = 6
     loop do
+      comma = line.comma?
       if line.separator? || line.end_line?
-        puts
+        puts unless comma
         return
       elsif line.sharp?
-        digits = line.number?
+        digits = expression(line)
       elsif str = line.string?
         print str
       else
-        v = expression line
+        v = expression(line)
         print v.to_s.rjust(digits, ' ')
       end
     end
@@ -130,7 +132,6 @@ class Program
     loop do
       if line.adding?
         v2 = expression_3(line)
-        puts "#{v1} + #{v2}"
         v = v1 + v2
         unless -32768 <= v && v <= 32767
           raise HowError.new
@@ -138,7 +139,6 @@ class Program
         v1 = v
       elsif line.subtracting?
         v2 = expression_3(line)
-        puts "#{v1} - #{v2}"
         v = v1 - v2
         unless -32768 <= v && v <= 32767
           raise HowError.new
@@ -156,7 +156,6 @@ class Program
     loop do
       if line.multiplying?
         v2 = expression_4(line)
-        puts "#{v1} * #{v2}"
         v = v1 * v2
         unless -32768 <= v && v <= 32767
           raise HowError.new
@@ -164,7 +163,6 @@ class Program
         v1 = v
       elsif line.dividing?
         v2 = expression_4(line)
-        puts "#{v1} / #{v2}"
         v1 = v1 / v2
       else
         break
@@ -209,7 +207,11 @@ class Program
         if n
           n
         else
-          parenthesis line
+          if line.current == '('
+            parenthesis line
+          else
+            nil
+          end
         end
 
       when '@'

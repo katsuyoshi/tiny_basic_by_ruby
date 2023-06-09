@@ -64,6 +64,10 @@ class TextLine
     end
   end
 
+  def current
+    statements[pointer]
+  end
+
   def command?
     skip_space
     Commands.each do |cmd|
@@ -231,6 +235,16 @@ class TextLine
       else
         return false
       end
+    end
+  end
+
+  def comma?
+    skip_space
+    if statements[pointer] == ','
+      move_pointer(1)
+      true
+    else
+      false
     end
   end
 

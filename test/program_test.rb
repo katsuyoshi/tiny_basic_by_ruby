@@ -91,14 +91,69 @@ class ProgramTest < Test::Unit::TestCase
     
   def test_expression_2_with_adding_and_subtracting
     l = TextLine.new "10 12 + 34 - 56"
-    assert_equal -10, @prog._expression_2(l)
+    assert_equal( -10, @prog._expression_2(l))
   end
 
-   # expression
-   def test_expression_with_formula
+  # expression
+  def test_expression_with_formula
     l = TextLine.new "10 (1 + 2) * (3 + 4) / (5 - 6)"
-    assert_equal -21, @prog._expression_2(l)
+    assert_equal( -21, @prog._expression_2(l))
   end
 
 
 end
+
+class ProgramStringTest < Test::Unit::TestCase
+
+  def setup
+    @prog = Program.new
+    @orignal_stdout = $stdout
+    @new_stdio = StringIO.new
+    $stdout = @new_stdio
+  end
+
+  def teardown
+    $stdout = @orignal_stdout
+    #puts @new_stdio.string
+  end
+
+  # print
+  def test_print_string
+    l = TextLine.new "print 'abc'"
+    @prog << l
+    assert_equal("ABC\n", $stdout.string)
+  end
+
+  def test_print_number
+    l = TextLine.new "print 123"
+    @prog << l
+    assert_equal("   123\n", $stdout.string)
+  end
+
+  def test_print_with_format
+    l = TextLine.new "print #4, 123"
+    @prog << l
+    assert_equal(" 123\n", $stdout.string)
+  end
+
+  def test_print_with_format_2
+    l = TextLine.new "print 'abc', #4, 1 + 2 + 3 * 4"
+    @prog << l
+    assert_equal("ABC  15\n", $stdout.string)
+  end
+
+  def test_print_end_with_comma
+    l = TextLine.new "print 'abc',"
+    @prog << l
+    assert_equal("ABC", $stdout.string)
+  end
+
+  def test_print_with_multi_statements
+    l = TextLine.new "print 'abc'; print 123,"
+    @prog << l
+    assert_equal("ABC\n   123", $stdout.string)
+  end
+
+end
+
+
