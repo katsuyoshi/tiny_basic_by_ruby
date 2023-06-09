@@ -100,10 +100,6 @@ class TextLine
       case ch
       when '0'..'9'
         str << ch
-      when ' '
-        # Skip a space.
-        # But break if str already set.
-        break unless str.empty?
       else
         break
       end
@@ -130,8 +126,6 @@ class TextLine
         quote = ch
         move_pointer(1)
         break
-      when ' '
-        move_pointer(1)
       else
         return nil
       end
@@ -162,7 +156,6 @@ class TextLine
           move_pointer(i + 1)
           return func
         end
-        next if ch == ' '
         if func_str[i] == ch
           if i == len - 1
             move_pointer(i + 1)
@@ -183,7 +176,6 @@ class TextLine
       len = oper_str.length
       0.upto len do |i|
         ch = statements[pointer + i]
-        next if ch == ' '
         if oper_str[i] == ch
           if i == len - 1
             move_pointer(i + 1)
@@ -198,11 +190,10 @@ class TextLine
   end
 
   def end_line?
+    skip_space
     i = 0
     loop do
       case statements[pointer + i]
-      when ' '
-        i += 1
       when nil
         break
       else
@@ -212,44 +203,6 @@ class TextLine
     end
     move_pointer(i)
     true
-  end
-
-  def separator?
-    loop do
-      case statements[pointer]
-      when ' '
-        move_pointer(1)
-      when ';'
-        move_pointer(1)
-        return true
-      else
-        return false
-      end
-    end
-  end
-
-  def sharp?
-    loop do
-      case statements[pointer]
-      when ' '
-        move_pointer(1)
-      when '#'
-        move_pointer(1)
-        return true
-      else
-        return false
-      end
-    end
-  end
-
-  def comma?
-    skip_space
-    if statements[pointer] == ','
-      move_pointer(1)
-      true
-    else
-      false
-    end
   end
 
   def variable?
@@ -262,64 +215,40 @@ class TextLine
     nil
   end
 
+  def separator?
+    charactor? ';'
+  end
+
+  def sharp?
+    charactor? '#'
+  end
+
+  def comma?
+    charactor? ','
+  end
+
   def left_parenthesis?
-    skip_space
-    if statements[pointer] == '('
-      move_pointer(1)
-      true
-    else
-      false
-    end
+    charactor? '('
   end
   
   def right_parenthesis?
-    skip_space
-    if statements[pointer] == ')'
-      move_pointer(1)
-      true
-    else
-      false
-    end
+    charactor? ')'
   end
 
   def adding?
-    skip_space
-    if statements[pointer] == '+'
-      move_pointer(1)
-      true
-    else
-      false
-    end
+    charactor? '+'
   end
   
   def subtracting?
-    skip_space
-    if statements[pointer] == '-'
-      move_pointer(1)
-      true
-    else
-      false
-    end
+    charactor? '-'
   end
   
   def multiplying?
-    skip_space
-    if statements[pointer] == '*'
-      move_pointer(1)
-      true
-    else
-      false
-    end
+    charactor? '*'
   end
   
   def dividing?
-    skip_space
-    if statements[pointer] == '/'
-      move_pointer(1)
-      true
-    else
-      false
-    end
+    charactor? '/'
   end
   
 
@@ -330,6 +259,19 @@ class TextLine
   def move_pointer n
     @pointer += n
   end
+
+  private
+
+  def charactor? ch
+    skip_space
+    if statements[pointer] == ch
+      move_pointer(1)
+      true
+    else
+      false
+    end
+  end
+
 
 end
 
