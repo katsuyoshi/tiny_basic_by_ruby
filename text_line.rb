@@ -251,6 +251,10 @@ class TextLine
     charactor? '/'
   end
   
+  def equal?
+    charactor? '='
+  end
+
 
   def reset
     @pointer = 0

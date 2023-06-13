@@ -26,3 +26,33 @@ ABC
 OK
 > 
 ```
+
+## LETによる代入ができる様になりました。(6/14)
+
+```
+% ./tiny_basic 
+Tiny Basic by Ruby 0.1.0.
+
+OK
+> let a = 1
+
+OK
+> print a
+     1
+
+OK
+> a = 1, b = 1 + 1, c = a + b
+
+OK
+> print a, b, c
+     1     2     3
+
+OK
+> a = 1, b = 2, c = a * 2; print a; print b; print c
+     1
+     2
+     2
+
+OK
+>
+```

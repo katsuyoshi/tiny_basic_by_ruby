@@ -100,6 +100,27 @@ class ProgramTest < Test::Unit::TestCase
     assert_equal( -21, @prog._expression_2(l))
   end
 
+  # let
+  def test_let_a_eq_1
+    l = TextLine.new "a = 1"
+    @prog << l
+    assert_equal(1, @prog.variables["A"])
+  end
+
+  def test_let_a_b_c
+    l = TextLine.new "a = 1, b = 1 + 1, c = a + b;"
+    @prog << l
+    assert_equal(1, @prog.variables["A"])
+    assert_equal(2, @prog.variables["B"])
+    assert_equal(3, @prog.variables["C"])
+  end
+
+  def test_let_array
+    l = TextLine.new "let @(10) = 12 * 34"
+    @prog << l
+    assert_equal(408, @prog.array[10])
+  end
+
 
 end
 

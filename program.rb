@@ -13,7 +13,7 @@ class Program
     run: :not_implemented,
     new: :clear,
     next: :not_implemented,
-    let: :not_implemented,
+    let: :parse_let,
     if: :not_implemented,
     goto: :not_implemented,
     gosub: :not_implemented,
@@ -58,6 +58,9 @@ class Program
         send Commands[cmd], n || 0
       when :print
         send Commands[cmd], line
+      else
+        # Let
+        send Commands[:let], line
       end
     end
   end
@@ -98,6 +101,38 @@ class Program
       end
     end
   end
+
+  def parse_let line
+    loop do
+      if line.separator? || line.end_line?
+        return
+      elsif var = line.variable?
+        idx = nil
+        if var == '@'
+          idx = parenthesis(line)
+        end
+        unless line.equal?
+        p line
+          raise WhatError.new
+        end
+        if var == '@'
+          array[idx] = expression(line)
+        else
+          variables[var] = expression(line)
+        end
+        unless line.comma?
+          if line.separator? || line.end_line?
+            return
+          else
+            raise WhatError.new
+          end
+        end
+      else
+        raise WhatError.new
+      end
+    end
+  end
+
 
   def expression line
     expression_1(line)
