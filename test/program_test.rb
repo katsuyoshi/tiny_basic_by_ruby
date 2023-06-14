@@ -121,7 +121,7 @@ class ProgramTest < Test::Unit::TestCase
     assert_equal(408, @prog.array[10])
   end
 
-
+ 
 end
 
 class ProgramStringTest < Test::Unit::TestCase

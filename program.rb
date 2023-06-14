@@ -14,7 +14,7 @@ class Program
     new: :clear,
     next: :not_implemented,
     let: :parse_let,
-    if: :not_implemented,
+    if: :exec_if,
     goto: :exec_goto,
     gosub: :not_implemented,
     return: :not_implemented,
@@ -62,7 +62,7 @@ class Program
         n = line.number?
         raise WhatError.new(line) unless line.end_line?
         send Commands[cmd], n || 0
-      when :print
+      when :print, :if
         send Commands[cmd], line
       when :rem
         line.stop
@@ -112,6 +112,12 @@ class Program
     # Check there is nothing or separator after the command.
     raise WhatError.new(line) unless line.separator? || line.end_line?
     next_line
+  end
+
+  def exec_if line
+    if expression(line) == 0
+      line.stop
+    end
   end
 
   def exec_print line
@@ -183,7 +189,7 @@ class Program
     when :">"
       v1 > v2 ? 1 : 0
     when :"="
-      v1 = v2 ? 1 : 0
+      v1 == v2 ? 1 : 0
     when :"<="
       v1 <= v2 ? 1 : 0
     when :"<"
