@@ -64,6 +64,8 @@ class Program
         send Commands[cmd], n || 0
       when :print
         send Commands[cmd], line
+      when :rem
+        line.stop
       else
         # Let
         send Commands[:let], line
