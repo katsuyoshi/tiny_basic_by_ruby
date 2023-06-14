@@ -45,6 +45,8 @@ class Text
     end
   end
 
+  # find line
+
   def find_line no
     @lines[no]
   end
@@ -54,6 +56,14 @@ class Text
       return @lines[n] if n > no
     end
     nil
+  end
+
+  def first_line
+    find_next_line 0
+  end
+
+  def next_line line
+    find_next_line line.no
   end
 
   private

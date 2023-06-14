@@ -43,7 +43,7 @@ class TextLine
     else
       raise WhatError.new(self)
     end
-    reset
+    start
   end
 
   def error_message
@@ -260,12 +260,18 @@ class TextLine
   end
 
 
-  def reset
+  # pointer operations
+
+  def start
     @pointer = 0
   end
 
+  def stop
+    @pointer = @statements.size
+  end
+
   def move_pointer n
-    @pointer += n
+    @pointer = [@pointer + n, @statements.size].min
   end
 
   private

@@ -24,6 +24,12 @@ loop do
       break if r    
     end
   rescue => e
-    puts e
+    case e
+    when TinyBasicError
+      puts e
+    else
+      p caller
+      p e
+    end
   end
 end

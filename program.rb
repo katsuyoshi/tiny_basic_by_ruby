@@ -10,19 +10,19 @@ class Program
 
   Commands = {
     list: :exec_print_list,
-    run: :not_implemented,
+    run: :exec_run,
     new: :clear,
     next: :not_implemented,
     let: :parse_let,
     if: :not_implemented,
-    goto: :not_implemented,
+    goto: :exec_goto,
     gosub: :not_implemented,
     return: :not_implemented,
     rem: :not_implemented,
     for: :not_implemented,
     input: :not_implemented,
     print: :exec_print,
-    stop: :stop,
+    stop: :exec_stop,
   }
 
 
@@ -44,14 +44,20 @@ class Program
   end
 
   def exec_line line
-    line.reset
+    line.start
     until line.end_line?
       cmd = line.command?
       case cmd
-      when :run, :new, :stop
+      when :run, :new
         # Check there is nothing after the command.
         raise WhatError.new(line) unless line.end_line?
         send Commands[cmd]
+      when :stop
+        # Check there is nothing after the command.
+        raise WhatError.new(line) unless line.end_line?
+        return send Commands[cmd], line
+      when :goto
+        return send Commands[cmd], line
       when :list
         n = line.number?
         raise WhatError.new(line) unless line.end_line?
@@ -63,6 +69,7 @@ class Program
         send Commands[:let], line
       end
     end
+    line.direct? ? nil : text.next_line(line)
   end
 
   private
@@ -73,6 +80,14 @@ class Program
   def not_implemented
   end
 
+  def exec_run line = nil
+    line ||= text.first_line
+    @current = line if line
+    while @current
+      @current = exec_line(@current)
+    end
+  end
+
   def exec_print_list no
     text.exec_print_list no
   end
@@ -81,7 +96,20 @@ class Program
     text.clear
   end
 
-  def stop
+  def exec_stop line
+    line.stop
+    nil
+  end
+
+  def exec_goto line
+    no = expression line
+    next_line = text.find_line no
+    unless next_line
+      raise HowError.new(line)
+    end
+    # Check there is nothing or separator after the command.
+    raise WhatError.new(line) unless line.separator? || line.end_line?
+    next_line
   end
 
   def exec_print line
