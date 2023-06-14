@@ -11,15 +11,19 @@ include TinyBasic
 puts "Tiny Basic by Ruby #{VERSION}."
 
 loop do
-  puts
-  puts "OK"
+  begin
+    puts
+    puts "OK"
 
-  loop do
-    print "> "
-    buf = gets
-    exit if /exit|quit/ =~ buf
+    loop do
+      print "> "
+      buf = gets
+      exit if /exit|quit/ =~ buf
 
-    r = @prog << buf
-    break if r
+      r = @prog << buf
+      break if r    
+    end
+  rescue => e
+    puts e
   end
 end

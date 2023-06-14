@@ -25,7 +25,7 @@ class Text
       end
       @current
     else
-      raise WhatError.new
+      raise WhatError.new(line)
     end
   end
 

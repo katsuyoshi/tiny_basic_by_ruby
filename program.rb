@@ -50,11 +50,11 @@ class Program
       case cmd
       when :run, :new, :stop
         # Check there is nothing after the command.
-        raise WhatError.new unless line.end_line?
+        raise WhatError.new(line) unless line.end_line?
         send Commands[cmd]
       when :list
         n = line.number?
-        raise WhatError.new unless line.end_line?
+        raise WhatError.new(line) unless line.end_line?
         send Commands[cmd], n || 0
       when :print
         send Commands[cmd], line
@@ -112,8 +112,7 @@ class Program
           idx = parenthesis(line)
         end
         unless line.equal?
-        p line
-          raise WhatError.new
+          raise WhatError.new(line)
         end
         if var == '@'
           array[idx] = expression(line)
@@ -124,11 +123,11 @@ class Program
           if line.separator? || line.end_line?
             return
           else
-            raise WhatError.new
+            raise WhatError.new(line)
           end
         end
       else
-        raise WhatError.new
+        raise WhatError.new(line)
       end
     end
   end
@@ -169,14 +168,14 @@ class Program
         v2 = expression_3(line)
         v = v1 + v2
         unless -32768 <= v && v <= 32767
-          raise HowError.new
+          raise HowError.new(line)
         end
         v1 = v
       elsif line.subtracting?
         v2 = expression_3(line)
         v = v1 - v2
         unless -32768 <= v && v <= 32767
-          raise HowError.new
+          raise HowError.new(line)
         end
         v1 = v
       else
@@ -193,7 +192,7 @@ class Program
         v2 = expression_4(line)
         v = v1 * v2
         unless -32768 <= v && v <= 32767
-          raise HowError.new
+          raise HowError.new(line)
         end
         v1 = v
       elsif line.dividing?
@@ -208,11 +207,11 @@ class Program
 
   def parenthesis line
     unless line.left_parenthesis?
-      raise WhatError.new
+      raise WhatError.new(line)
     end
     v = expression(line)
     unless line.right_parenthesis?
-      raise WhatError.new
+      raise WhatError.new(line)
     end
     v
   end
@@ -226,7 +225,7 @@ class Program
     when :rnd
       v = parenthesis line
       unless 1 <= v && v <= 32767 - 1
-        raise HowError.new
+        raise HowError.new(line)
       end
       rand(v) + 1
 
@@ -253,10 +252,10 @@ class Program
         # array a[0-32767]
         n = parenthesis line
         unless n
-          raise WhatError.new
+          raise WhatError.new(line)
         end
         unless 0 <= n && n <= 32767
-          raise HowError.new
+          raise HowError.new(line)
         end
         array[n] || 0
       else

@@ -41,9 +41,13 @@ class TextLine
       @no = ($1 || 0)&.to_i
       @statements = $2.upcase
     else
-      raise WhatError.new
+      raise WhatError.new(self)
     end
     reset
+  end
+
+  def error_message
+    "#{no} #{statements[0...pointer]}?#{statements[pointer..-1]}"
   end
 
   def direct?
@@ -110,7 +114,7 @@ class TextLine
       nil
     else
       n = str.to_i
-      raise HowError unless n <= 32768
+      raise HowError(self) unless n <= 32768
       n
     end
   end
