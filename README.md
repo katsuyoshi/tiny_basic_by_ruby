@@ -63,7 +63,6 @@ OK
 Tiny Basic by Ruby 0.1.0.
 
 OK
-> 10 print 'a'
 > 10 print 'a'; stop
 > 20 print 'b'
 > run
