@@ -127,7 +127,7 @@ class Program
   end
 
   def exec_for line
-    stack.push for_var if for_var
+    stack.push @for_var if @for_var
 
     var = line.variable?
     idx = nil
@@ -165,12 +165,12 @@ class Program
   def exec_next line
 
     var = line.variable?
-    if for_var.nil? || var.nil? || for_var.var != var
+    if @for_var.nil? || var.nil? || @for_var.var != var
       raise WhatError.new(line)
     end
     
-    var = for_var.var
-    step = for_var.step
+    var = @for_var.var
+    step = @for_var.step
     val = nil
 
     # add step
@@ -184,44 +184,20 @@ class Program
     # check loop end
     end_for = false
     if step < 0
-      if val < for_var.limit
+      if val < @for_var.limit
         end_for = true
       end
     else
-      if val > for_var.limit
+      if val > @for_var.limit
         end_for = true
       end
     end
 
-    # NOTE:
-    # 以下の処理でend_forがfalseなのにfor_var = stack.popが
-    # 実行されてしまう(bug?)様で for_val がnilになり 
-    # for_val.line で失敗してしまうので別メソッド exec_next_2 で
-    # 実行させている。
-    # 
-    # begin end 間を有効にしてexec_next_2をコメントにし
-    # 以下を入力すると発生を確認できる
-    # % ./tiny_basic
-    # > 10 for a = 0 to 9; p.a; next a
-    # > r.
-    # #<NoMethodError: undefined method `line' for nil:NilClass
-=begin
     if end_for
-      for_var = stack.pop
+      @for_var = stack.pop
       line
     else
-      TextLine.new(for_var.line)
-    end
-=end
-    exec_next_2 line, for_var, end_for
-  end
-
-  def exec_next_2 line, for_var, end_for
-    if end_for
-      for_var = stack.pop if end_for
-      line
-    else
-      TextLine.new(for_var.line)
+      TextLine.new(@for_var.line)
     end
   end
 
