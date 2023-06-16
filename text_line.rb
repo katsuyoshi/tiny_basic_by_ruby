@@ -36,14 +36,26 @@ class TextLine
     :"<",
   ]
 
+  OtherKeys = [
+    :to,
+    :step,
+  ]
+
   def initialize line
-    if /^(\d*)\s*(.*)\s*/ =~ line
-      @no = ($1 || 0)&.to_i
-      @statements = $2.upcase
-    else
-      raise WhatError.new(self)
+    case line
+    when String
+      if /^(\d*)\s*(.*)\s*/ =~ line
+        @no = ($1 || 0)&.to_i
+        @statements = $2.upcase
+      else
+        raise WhatError.new(self)
+      end
+      start
+    when TextLine
+      @no = line.no
+      @statements = line.statements
+      @pointer = line.pointer
     end
-    start
   end
 
   def error_message
@@ -184,6 +196,26 @@ class TextLine
           if i == len - 1
             move_pointer(i + 1)
             return oper
+          end
+        else
+          break
+        end
+      end
+    end
+    return nil
+  end
+
+  def other_key?
+    skip_space
+    OtherKeys.each do |key|
+      key_str = key.to_s.upcase
+      len = key_str.length
+      0.upto len do |i|
+        ch = statements[pointer + i]
+        if key_str[i] == ch
+          if i == len - 1
+            move_pointer(i + 1)
+            return key
           end
         else
           break

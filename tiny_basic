@@ -28,7 +28,7 @@ loop do
     when TinyBasicError
       puts e
     else
-      p caller
+      puts e.backtrace
       p e
     end
   end

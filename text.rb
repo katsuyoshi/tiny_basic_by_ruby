@@ -52,6 +52,9 @@ class Text
   end
 
   def find_next_line no
+    if no.is_a? TextLine
+      return find_next_line no.no
+    end
     @lines.keys.each do |n|
       return @lines[n] if n > no
     end
@@ -63,7 +66,7 @@ class Text
   end
 
   def next_line line
-    find_next_line line.no
+    find_next_line line
   end
 
   private

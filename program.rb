@@ -3,23 +3,25 @@ require 'error'
 
 module TinyBasic
 
+ForVariable = Struct.new(:var, :limit, :step, :line)
+
 class Program
   attr_reader :text, :current
-
   attr_reader :variables, :array
+  attr_reader :stack, :for_var
 
   Commands = {
     list: :exec_print_list,
     run: :exec_run,
     new: :clear,
-    next: :not_implemented,
+    next: :exec_next,
     let: :parse_let,
     if: :exec_if,
     goto: :exec_goto,
     gosub: :not_implemented,
     return: :not_implemented,
     rem: :not_implemented,
-    for: :not_implemented,
+    for: :exec_for,
     input: :not_implemented,
     print: :exec_print,
     stop: :exec_stop,
@@ -30,6 +32,7 @@ class Program
     @text = Text.new
     @variables = {}
     @array = []
+    @stack = []
   end
 
   # @return true: executed direct command; false: append a line to the text area
@@ -62,8 +65,10 @@ class Program
         n = line.number?
         raise WhatError.new(line) unless line.end_line?
         send Commands[cmd], n || 0
-      when :print, :if
+      when :print, :if, :for
         send Commands[cmd], line
+      when :next
+        line = send Commands[cmd], line
       when :rem
         line.stop
       else
@@ -87,6 +92,7 @@ class Program
     @current = line if line
     while @current
       @current = exec_line(@current)
+      @current&.start
     end
   end
 
@@ -117,6 +123,105 @@ class Program
   def exec_if line
     if expression(line) == 0
       line.stop
+    end
+  end
+
+  def exec_for line
+    stack.push for_var if for_var
+
+    var = line.variable?
+    idx = nil
+    if var == '@'
+      idx = parenthesis(line)
+    end
+    unless line.equal?
+      raise WhatError.new(line)
+    end
+    if var == '@'
+      array[idx] = expression(line)
+    else
+      variables[var] = expression(line)
+    end
+
+    unless line.other_key? == :to
+      raise WhatError.new(line)
+    end
+    limit = expression(line)
+
+    step = 1
+    if line.other_key? == :step
+      step = expression(line)
+    end
+
+    @for_var = ForVariable.new(idx || var, limit, step, TextLine.new(line))
+
+    # remove duplicated var's data
+    duplicated = stack.find{|e| e.is_a?(ForVariable) && e.var == @for_var.var}
+    stack.delete duplicated
+
+    line
+  end
+
+  def exec_next line
+
+    var = line.variable?
+    if for_var.nil? || var.nil? || for_var.var != var
+      raise WhatError.new(line)
+    end
+    
+    var = for_var.var
+    step = for_var.step
+    val = nil
+
+    # add step
+    case var
+    when String
+      val = variables[var] += step
+    when Integer
+      val = array[var] += step
+    end
+
+    # check loop end
+    end_for = false
+    if step < 0
+      if val < for_var.limit
+        end_for = true
+      end
+    else
+      if val > for_var.limit
+        end_for = true
+      end
+    end
+
+    # NOTE:
+    # 以下の処理でend_forがfalseなのにfor_var = stack.popが
+    # 実行されてしまう(bug?)様で for_val がnilになり 
+    # for_val.line で失敗してしまうので別メソッド exec_next_2 で
+    # 実行させている。
+    # 
+    # begin end 間を有効にしてexec_next_2をコメントにし
+    # 以下を入力すると発生を確認できる
+    # % ./tiny_basic
+    # > 10 for a = 0 to 9; p.a; next a
+    # > r.
+    # #<NoMethodError: undefined method `line' for nil:NilClass
+=begin
+    if end_for
+      for_var = stack.pop
+      line
+    else
+      TextLine.new(for_var.line)
+    end
+=end
+    exec_next_2 line, for_var, end_for
+  end
+
+  def exec_next_2 line, for_var, end_for
+    if end_for
+      for_var = stack.pop if end_for
+      line
+    else
+      TextLine.new(for_var.line)
     end
   end
 
