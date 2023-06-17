@@ -119,3 +119,24 @@ OK
  9 X 8 = 72
  9 X 9 = 81
 ```
+
+## GOUSB RETURN によるサブルーチンコールができる様になりました(6/17)
+
+```
+Tiny Basic by Ruby 0.1.0.
+
+OK
+> 10 GOSUB 100; PRINT "A"
+> 20 STOP
+> 30 PRINT "B"
+> 100 PRINT "C"
+> 110 RETURN
+
+OK
+> run
+C
+A
+
+OK
+> 
+```

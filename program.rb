@@ -18,8 +18,8 @@ class Program
     let: :parse_let,
     if: :exec_if,
     goto: :exec_goto,
-    gosub: :not_implemented,
-    return: :not_implemented,
+    gosub: :exec_gosub,
+    return: :exec_return,
     rem: :not_implemented,
     for: :exec_for,
     input: :not_implemented,
@@ -59,7 +59,7 @@ class Program
         # Check there is nothing after the command.
         raise WhatError.new(line) unless line.end_line?
         return send Commands[cmd], line
-      when :goto
+      when :goto, :gosub
         return send Commands[cmd], line
       when :list
         n = line.number?
@@ -67,7 +67,7 @@ class Program
         send Commands[cmd], n || 0
       when :print, :if, :for
         send Commands[cmd], line
-      when :next
+      when :next, :return
         line = send Commands[cmd], line
       when :rem
         line.stop
@@ -199,6 +199,34 @@ class Program
     else
       TextLine.new(@for_var.line)
     end
+  end
+
+  def exec_gosub line
+    no = expression(line)
+    unless line.separator? || line.end_line?
+      raise WhatError.new(line)
+    end
+    next_line = text.find_line no
+    unless next_line
+      raise HowError.new(line)
+    end
+
+    gosub_var = ForVariable.new(nil, nil, nil, TextLine.new(line))
+    stack.push(gosub_var)
+    next_line
+  end
+
+  def exec_return line
+    unless line.separator? || line.end_line?
+      raise WhatError.new(line)
+    end
+
+    gosub_var = stack.pop
+    unless gosub_var && gosub_var&.var.nil?
+      raise WhatError.new(line)
+    end
+
+    TextLine.new(gosub_var.line)
   end
 
   def exec_print line
