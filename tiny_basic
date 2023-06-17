@@ -31,5 +31,6 @@ loop do
       puts e.backtrace
       p e
     end
+  rescue Interrupt
   end
 end
