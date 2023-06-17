@@ -131,12 +131,28 @@ OK
 > 30 PRINT "B"
 > 100 PRINT "C"
 > 110 RETURN
-
-OK
-> run
+> r.
 C
 A
 
 OK
 > 
 ```
+
+## INPUT文で入力ができる様になりました(6/17)
+
+```
+Tiny Basic by Ruby 0.1.0.
+
+OK
+> 10 input "score" a, b
+> 20 print a, b
+> r.
+SCORE:(a+1)*2+3
+B:12
+    11    12
+
+OK
+```
+
+ここまででTiny Basicの実装が完了しました。

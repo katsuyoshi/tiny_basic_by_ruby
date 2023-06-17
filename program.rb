@@ -22,7 +22,7 @@ class Program
     return: :exec_return,
     rem: :not_implemented,
     for: :exec_for,
-    input: :not_implemented,
+    input: :exec_input,
     print: :exec_print,
     stop: :exec_stop,
   }
@@ -67,7 +67,7 @@ class Program
         send Commands[cmd], n || 0
       when :print, :if, :for
         send Commands[cmd], line
-      when :next, :return
+      when :next, :return, :input
         line = send Commands[cmd], line
       when :rem
         line.stop
@@ -244,6 +244,78 @@ class Program
         v = expression(line)
         print v.to_s.rjust(digits, ' ')
       end
+    end
+  end
+
+  def exec_input line
+    loop do
+      input_line = TextLine.new(line)
+      var = nil; idx = nil
+      if str = input_line.string?
+        # print prompte if there is a string
+        print "#{str}:"
+        
+        # check variable
+        if var = input_line.variable?
+          if var == "@"
+            idx = expression(input_line)
+            unless idx
+              raise HowError.new(input_line)
+            end
+          end
+        end
+
+      else
+        # it must be a variable
+        unless var = input_line.variable?
+          raise WhatError.new(input_line)
+        end
+        if var == "@"
+          idx = expression(input_line)
+          unless idx
+            raise HowError.new(input_line)
+          end
+          print "#{var}(#{idx}):"
+        else
+          print "#{var}:"
+        end
+      end
+
+      # set a value to the variable
+      if var
+        begin
+          # put zero first to be a direct command 
+          buf_line = TextLine.new("0 #{gets}")
+          val = expression(buf_line)
+          unless val
+            raise WhatError.new()
+          end
+          if var == "@"
+            array[idx] = val
+          else
+            variables[var] = val
+          end
+        rescue => e
+          case e
+          when TinyBasicError
+            puts e
+          else
+            puts HowError.new(TextLine.new(""))
+          end
+          next
+        end
+      end
+
+      # check end line
+      if input_line.separator? || input_line.end_line?
+        return input_line
+      end
+
+      # check required the next variable
+      unless input_line.comma?
+        raise WhatError.new(input_line)
+      end
+      line = input_line
     end
   end
 
